@@ -41,7 +41,7 @@ class Runner(val nClassif: Int, val nFeatures: Int, val divisions: Array[Int]) {
     val dt = new DecisionTreeClassifier().setLabelCol(LABEL).setFeaturesCol(FEATURES)
     val baseModels = trainingSubsets.map(subset => dt.fit(subset))
 
-    var testedSubset = predictBaseClfs(baseModels, testSubset)
+    val testedSubset = predictBaseClfs(baseModels, testSubset)
     val mvQualityMeasure = testMvAcc(testedSubset, nClassif)
     var result = Array(mvQualityMeasure)
 

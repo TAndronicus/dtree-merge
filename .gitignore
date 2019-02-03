@@ -3,3 +3,6 @@ project/
 target/
 A/
 B/
+**/PlaygroundJava.java
+**/.directory
+result*

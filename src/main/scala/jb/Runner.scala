@@ -26,7 +26,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     val start = LocalTime.now
 
     var input = getRawInput(filename, "csv")
-    if (nFeatures > input.columns.length - 1) {this.nFeatures = input.columns.length - 1; println(s"Setting nFeatures to $nFeatures")}
+    if (nFeatures > input.columns.length - 1) {this.nFeatures = input.columns.length - 1; println(s"Setting nFeatures to $nFeatures"); return Array(0D, 0D)}
     val featureVectorizer = getFeatureVectorizer(input.columns)
     val featureSelector = FeatureSelectors.get_chi_sq_selector(nFeatures)
     val dataPrepPipeline = new Pipeline().setStages(Array(featureVectorizer, featureSelector))

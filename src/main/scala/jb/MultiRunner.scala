@@ -18,21 +18,12 @@ object MultiRunner {
   }
 
   private def runForFiles(reps: Int, runner: Runner)(filenames: Array[String]) = {
-    val finalScores = new Array[Array[Double]](filenames.length)
+    val scores = new Array[Array[Double]](filenames.length)
     for (index <- filenames.indices) {
       println(s"File: ${filenames(index)}")
-      finalScores(index) = runReps(reps, runner, filenames(index))
+      scores(index) = runner.calculateMvIScores(FILENAME_PREFIX + filenames(index))
     }
-    finalScores
-  }
-
-  private def runReps(reps: Int, runner: Runner, filename: String) = {
-    val meanScores = new Array[Double](runner.divisions.length + 1)
-    for (_ <- 0.until(reps)) {
-      val scores = runner.calculateMvIScores(FILENAME_PREFIX + filename)
-      scores.indices.foreach(i => meanScores(i) += scores(i))
-    }
-    meanScores.map(_ / reps)
+    Array(Array(.1, .2))
   }
 
   def writeScores(finalScores: Array[Array[Double]]): Unit = {

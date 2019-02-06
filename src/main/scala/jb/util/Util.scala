@@ -56,4 +56,16 @@ object Util {
     mins.indices.map(i => (maxes(i) - mins(i)) / division).toArray
   }
 
+  def testAggregate(container: Array[Array[Array[Double]]]): Array[Array[Double]] = {
+    val result = new Array[Array[Double]](container(0).length)
+    for (midIndex <- container(0).indices) {
+      val partialResult = new Array[Double](container(0)(0).length)
+      for (innerIndex <- container(0)(0).indices) {
+        partialResult(innerIndex) = container.map(score => score(midIndex)(innerIndex)).sum / container.length
+      }
+      result(midIndex) = partialResult
+    }
+    result
+  }
+
 }

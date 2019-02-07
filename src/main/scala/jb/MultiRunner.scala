@@ -3,8 +3,11 @@ package jb
 import java.io.{File, PrintWriter}
 
 import jb.util.Const.FILENAME_PREFIX
+import jb.util.ResultCatcher
 
 object MultiRunner {
+
+  val resultCatcher = new ResultCatcher(.3, 10, 100)
 
   def run(nClassif: Int, nFeatures: Int, divisions: Array[Int]): Double = {
     val reps = 1
@@ -13,17 +16,18 @@ object MultiRunner {
     val runner = new Runner(nClassif, nFeatures, divisions)
     val finalScores = runForFiles(reps, runner)(filenames)
 
-    //    writeScores(finalScores)
-    finalScores.map(sc => if (sc.last > sc.head) 1 else 0).sum.toDouble / finalScores.length
+    writeScores(finalScores)
   }
 
   private def runForFiles(reps: Int, runner: Runner)(filenames: Array[String]) = {
-    val scores = new Array[Array[Double]](filenames.length)
-    for (index <- filenames.indices) {
-      println(s"File: ${filenames(index)}")
-      scores(index) = runner.calculateMvIScores(FILENAME_PREFIX + filenames(index))
+    while (resultCatcher.canConsume && !resultCatcher.isFilled) {
+      val scores = new Array[Array[Double]](filenames.length)
+      for (index <- filenames.indices) {
+        println(s"File: ${filenames(index)}")
+        scores(index) = runner.calculateMvIScores(FILENAME_PREFIX + filenames(index))
+      }
     }
-    Array(Array(.1, .2))
+    resultCatcher.aggregate
   }
 
   def writeScores(finalScores: Array[Array[Double]]): Unit = {

@@ -1,7 +1,8 @@
 package jb.util
 
-import org.scalatest.FunSuite
+import jb.server.SparkEmbedded
 import jb.util.Util._
+import org.scalatest.FunSuite
 
 class UtilTest extends FunSuite {
 
@@ -31,7 +32,7 @@ class UtilTest extends FunSuite {
 
     // then
     assert(result.length == 2)
-    result.map(_.length == 2).foreach(assert)
+    result.map(_.length == 3).foreach(assert(_))
     val delta = 1e-6
     val expectedResult = Array(
       Array(.4, .4, .55),
@@ -40,7 +41,7 @@ class UtilTest extends FunSuite {
     result.indices.foreach(
       outerIndex => result(0).indices.map(
         innerIndex => result(outerIndex)(innerIndex) - expectedResult(outerIndex)(innerIndex)
-      ).map(math.abs).map(_ < delta).foreach(assert)
+      ).map(math.abs).map(_ < delta).foreach(assert(_))
     )
   }
 

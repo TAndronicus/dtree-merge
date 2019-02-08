@@ -8,7 +8,6 @@ import jb.model.{Cube, IntegratedDecisionTreeModel}
 import jb.parser.TreeParser
 import jb.prediction.Predictions.predictBaseClfs
 import jb.selector.FeatureSelectors
-import jb.server.SparkEmbedded
 import jb.tester.Tester.{testIAcc, testMvAcc}
 import jb.util.Const._
 import jb.util.Util._
@@ -18,7 +17,7 @@ import jb.vectorizer.FeatureVectorizers.getFeatureVectorizer
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.DecisionTreeClassifier
 
-class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
+class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
 
   def calculateMvIScores(filename: String): Array[Double] = {
 
@@ -26,7 +25,10 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     val start = LocalTime.now
 
     var input = getRawInput(filename, "csv")
-    if (nFeatures > input.columns.length - 1) {this.nFeatures = input.columns.length - 1; println(s"Setting nFeatures to $nFeatures"); return Array(0D, 0D)}
+    if (nFeatures > input.columns.length - 1) {
+      this.nFeatures = input.columns.length - 1
+      println(s"Setting nFeatures to $nFeatures")
+    }
     val featureVectorizer = getFeatureVectorizer(input.columns)
     val featureSelector = FeatureSelectors.get_chi_sq_selector(nFeatures)
     val dataPrepPipeline = new Pipeline().setStages(Array(featureVectorizer, featureSelector))
@@ -50,13 +52,11 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     val rootRect = Cube(mins, maxes)
     val treeParser = new TreeParser(sumOfVolumesInv, spansMid)
     val rects = baseModels.map(model => treeParser.dt2rect(rootRect, model.rootNode))
-    for (division <- divisions) {
-      val elSize = getElCubeSize(mins, maxes, division)
-      val tree = treeParser.rect2dt(mins, maxes, elSize, 0, nFeatures, rects)
-      val integratedModel = new IntegratedDecisionTreeModel(tree)
-      val iPredictions = integratedModel.transform(testedSubset)
-      result :+= testIAcc(iPredictions, testedSubset)
-    }
+    val elSize = getElCubeSize(mins, maxes, divisions)
+    val tree = treeParser.rect2dt(mins, maxes, elSize, 0, nFeatures, rects)
+    val integratedModel = new IntegratedDecisionTreeModel(tree)
+    val iPredictions = integratedModel.transform(testedSubset)
+    result :+= testIAcc(iPredictions, testedSubset)
 
     result
   }

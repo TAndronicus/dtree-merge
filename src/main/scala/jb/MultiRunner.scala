@@ -1,31 +1,33 @@
 package jb
 
 import jb.util.Const.FILENAME_PREFIX
-import jb.util.result.EagerResultCatcher
+import jb.util.result.{LeastBatchExhaustiveResultCatcher, ResultCatcher}
 
 object MultiRunner {
 
-  val resultCatcher = new EagerResultCatcher(.3, 10, 100)
 
   def run(nClassif: Int, nFeatures: Int, divisions: Int): Unit = {
-    val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "so", "sp", "t", "wd", "wi")
+    val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "t", "wd", "wi")
 
     val runner = new Runner(nClassif, nFeatures, divisions)
-    val finalScores = runForFiles(runner)(filenames)
+    val resultCatcher = runForFiles(runner)(filenames)
 
-    resultCatcher.writeScores(finalScores)
+    resultCatcher.writeScores(Array(nClassif.toString, nFeatures.toString, divisions.toString))
   }
 
-  private def runForFiles(runner: Runner)(filenames: Array[String]) = {
-    while (resultCatcher.canConsume && !resultCatcher.isFilled) {
+  private def runForFiles(runner: Runner)(filenames: Array[String]): ResultCatcher = {
+    val resultCatcher = getResultCatcher
+    while (resultCatcher.canConsume && !resultCatcher.isFull) {
       val scores = new Array[Array[Double]](filenames.length)
       for (index <- filenames.indices) {
-        println(s"File: ${filenames(index)}")
         scores(index) = runner.calculateMvIScores(FILENAME_PREFIX + filenames(index))
       }
       resultCatcher.consume(scores)
     }
-    resultCatcher.aggregate
+    resultCatcher
   }
 
+  private def getResultCatcher: ResultCatcher = {
+    new LeastBatchExhaustiveResultCatcher(0.3, 10, 150, 250)
+  }
 }

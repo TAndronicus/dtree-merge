@@ -1,7 +1,6 @@
 package jb
 
 import jb.server.SparkEmbedded
-import org.apache.spark.sql.functions._
 
 import scala.concurrent.ExecutionContext
 
@@ -15,24 +14,11 @@ object Playground {
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   def main(args: Array[String]): Unit = {
-    val df = SparkEmbedded.ss.createDataFrame(Seq(
-      (1, 2),
-      (2, 4),
-      (3, 6),
-      (4, 5),
-      (5, 6),
-      (6, 8)
-    )).toDF("id", "c")
-    val (a, b, c) = (.25, .25, .5)
 
-    df.createTempView("tab")
-
-    SparkEmbedded.ss.sql("create table result(c decimal)")
-    SparkEmbedded.ss.sql("select t1.c from ")
-    Array("E", "F", "G", "H").map(col).map(first)
-
-    println("heh")
-
+    SparkEmbedded.ss.read.format("csv").option("inferSchema", "true").load("A/bi").createTempView("a")
+    SparkEmbedded.ss.read.format("csv").option("inferSchema", "true").load("A/so").createTempView("b")
+    val a = SparkEmbedded.ss.sql("select * from a where exists(select * from b where a._c41 = b._c60)")
+    a.show()
 
   }
 }

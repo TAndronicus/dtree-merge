@@ -8,6 +8,7 @@ import jb.model.{Cube, IntegratedDecisionTreeModel}
 import jb.parser.TreeParser
 import jb.prediction.Predictions.predictBaseClfs
 import jb.selector.FeatureSelectors
+import jb.server.SparkEmbedded
 import jb.tester.Tester.{testIAcc, testMvAcc}
 import jb.util.Const._
 import jb.util.Util._
@@ -22,7 +23,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
   def calculateMvIScores(filename: String): Array[Double] = {
 
     //    import SparkEmbedded.ss.implicits._
-    val start = LocalTime.now
+    SparkEmbedded.ss.sqlContext.clearCache()
 
     var input = getRawInput(filename, "csv")
     if (nFeatures > input.columns.length - 1) {
@@ -57,6 +58,8 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
     val integratedModel = new IntegratedDecisionTreeModel(tree)
     val iPredictions = integratedModel.transform(testedSubset)
     result :+= testIAcc(iPredictions, testedSubset)
+
+    clearCache(subsets)
 
     result
   }

@@ -3,7 +3,7 @@ package jb.util
 import jb.util.Const._
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.feature.ChiSqSelectorModel
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.functions.col
 
 object Util {
@@ -34,6 +34,10 @@ object Util {
         item => col(COL_PREFIX + item)
       ).+:(col(FEATURES)).+:(col(LABEL)): _*
     ).persist
+  }
+
+  def clearCache(subsets: Array[Dataset[Row]]) = {
+    subsets.foreach(_.unpersist)
   }
 
   def getSelectedFeatures(dataPrepModel: PipelineModel): Array[Int] = {

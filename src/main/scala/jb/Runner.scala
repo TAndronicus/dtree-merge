@@ -1,6 +1,5 @@
 package jb
 
-import java.time.LocalTime
 import java.util.stream.IntStream
 
 import jb.io.FileReader.getRawInput

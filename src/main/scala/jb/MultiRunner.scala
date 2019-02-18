@@ -7,7 +7,8 @@ object MultiRunner {
 
 
   def run(nClassif: Int, nFeatures: Int, divisions: Int): Unit = {
-    val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "t", "wd", "wi")
+//    val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "t", "wd", "wi")
+    val filenames = Array("bi", "bu", "c", "d", "i", "m", "p", "se", "t", "wd", "wi")
 
     val runner = new Runner(nClassif, nFeatures, divisions)
     val resultCatcher = runForFiles(runner)(filenames)
@@ -18,13 +19,16 @@ object MultiRunner {
   private def runForFiles(runner: Runner)(filenames: Array[String]): ResultCatcher = {
     val resultCatcher = getResultCatcher
     while (resultCatcher.canConsume && !resultCatcher.isFull) {
-      val scores = new Array[Array[Double]](filenames.length)
-      for (index <- filenames.indices) {
-        scores(index) = runner.calculateMvIScores(FILENAME_PREFIX + filenames(index))
+      try {
+        val scores = new Array[Array[Double]](filenames.length)
+        for (index <- filenames.indices) {
+          scores(index) = runner.calculateMvIScores(FILENAME_PREFIX + filenames(index))
+        }
+        resultCatcher.consume(scores)
       }
-      resultCatcher.consume(scores)
     }
     resultCatcher
+
   }
 
   private def getResultCatcher: ResultCatcher = {

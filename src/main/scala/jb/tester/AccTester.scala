@@ -3,7 +3,7 @@ package jb.tester
 import jb.util.Const.{LABEL, PREDICTION}
 import org.apache.spark.sql.DataFrame
 
-object Tester {
+object AccTester {
 
   def testMvAcc(testSubset: DataFrame, nClassif: Int): Double = {
     val cols = for (i <- 0.until(nClassif)) yield PREDICTION + "_" + i

@@ -3,19 +3,10 @@ package jb.util
 import jb.util.Const._
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.feature.ChiSqSelectorModel
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
 object Util {
-
-  def parseDouble(value: Any): Double = {
-    value match {
-      case int: Int =>
-        int.toDouble
-      case double: Double =>
-        double
-    }
-  }
 
   def getExtrema(input: DataFrame, selectedFeatures: Array[Int]): (Array[Double], Array[Double]) = {
     var paramMap = List.newBuilder[(String, String)]
@@ -28,6 +19,15 @@ object Util {
     (mins, maxs)
   }
 
+  def parseDouble(value: Any): Double = {
+    value match {
+      case int: Int =>
+        int.toDouble
+      case double: Double =>
+        double
+    }
+  }
+
   def optimizeInput(input: DataFrame, dataPrepModel: PipelineModel): DataFrame = {
     dataPrepModel.transform(input).select(
       Util.getSelectedFeatures(dataPrepModel).map(
@@ -36,12 +36,12 @@ object Util {
     ).persist
   }
 
-  def clearCache(subsets: Array[Dataset[Row]]) = {
-    subsets.foreach(_.unpersist)
-  }
-
   def getSelectedFeatures(dataPrepModel: PipelineModel): Array[Int] = {
     dataPrepModel.stages(1).asInstanceOf[ChiSqSelectorModel].selectedFeatures
+  }
+
+  def clearCache(subsets: Array[Dataset[Row]]) = {
+    subsets.foreach(_.unpersist)
   }
 
   def recacheInput2Subsets(input: DataFrame, subsets: Array[DataFrame]): Unit = {

@@ -42,7 +42,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
     recacheInput2Subsets(input, subsets)
     val (trainingSubsets, cvSubset, testSubset) = dispenseSubsets(subsets)
 
-    val dt = new DecisionTreeClassifier().setLabelCol(LABEL).setFeaturesCol(FEATURES)
+    val dt = new DecisionTreeClassifier().setLabelCol(LABEL).setFeaturesCol(FEATURES)//.setMaxDepth(3)
     val baseModels = trainingSubsets.map(subset => dt.fit(subset))
 
     val testedSubset = predictBaseClfs(baseModels, testSubset)
@@ -59,7 +59,8 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
 
     clearCache(subsets)
 
-    Array(mvQualityMeasure._1, mvQualityMeasure._2, iQualityMeasure._1, iQualityMeasure._2)
+    Array(mvQualityMeasure._1, if(mvQualityMeasure._2.isNaN) 0D else mvQualityMeasure._2,
+      iQualityMeasure._1, if(iQualityMeasure._2.isNaN) 0D else iQualityMeasure._2)
   }
 
 }

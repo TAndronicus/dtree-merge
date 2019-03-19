@@ -7,8 +7,8 @@ object ExperimentPlan {
   def main(args: Array[String]): Unit = {
     SparkEmbedded.setLogError()
     val nClassifs = Array(7)
-    val nFeatures = 4
-    val divisions = Array(40, 60)
+    val nFeatures = 2
+    val divisions = Array(20, 40, 60)
     for (nC <- nClassifs; div <- divisions) {
       MultiRunner.run(nC, nFeatures, div)
     }

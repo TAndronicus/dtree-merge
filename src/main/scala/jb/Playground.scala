@@ -2,6 +2,7 @@ package jb
 
 import jb.server.SparkEmbedded
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.util.Random
 
@@ -15,11 +16,10 @@ object Playground {
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   def main(args: Array[String]): Unit = {
-
-    val a = (for (_ <- 0 until 5) yield Seq.fill(3)(Random.nextInt(2))).map(x => (x(0), x(1), x(2)))
-    import SparkEmbedded.ss.implicits._
-    a.toDF.show
+    isList(List(1, 2, 3))
   }
+
+  def sth[A, B, C]: (A => B) => C = ???
 
   def parseDouble(value: Any): Double = {
     value match {
@@ -29,4 +29,12 @@ object Playground {
         double
     }
   }
+
+  def isList(a: Any): Unit = {
+    a match {
+      case a: List[AnyVal] => println("Heh")
+      case _ => println("Jednak nie")
+    }
+  }
+
 }

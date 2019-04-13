@@ -1,11 +1,5 @@
 package jb
 
-import jb.server.SparkEmbedded
-
-import scala.annotation.tailrec
-import scala.concurrent.ExecutionContext
-import scala.util.Random
-
 
 case class FooResponse(foos: Seq[Foo])
 

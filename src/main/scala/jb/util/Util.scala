@@ -8,6 +8,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
 object Util {
 
+  // TODO: optimize cpu
   def getExtrema(input: DataFrame, selectedFeatures: Array[Int]): (Array[Double], Array[Double]) = {
     var paramMap = List.newBuilder[(String, String)]
     for (item <- selectedFeatures.sorted; fun <- Array("min", "max")) {

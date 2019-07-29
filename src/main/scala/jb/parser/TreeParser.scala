@@ -8,6 +8,7 @@ import scala.math.floor
 
 class TreeParser(val weightAggregator: Array[Cube] => Double, rowWithin: (Array[Double], Array[Double]) => (Array[Double], Array[Double]) => Boolean) {
 
+  // TODO: optimize cpu
   def dt2rect(parent: Cube, node: Node): Array[Cube] = {
     node match {
       case _: InternalNode =>
@@ -27,6 +28,7 @@ class TreeParser(val weightAggregator: Array[Cube] => Double, rowWithin: (Array[
     }
   }
 
+  // TODO: optimize cpu
   def calculateLabel(mins: Array[Double], maxes: Array[Double], rects: Array[Array[Cube]]): Double = {
     rects.map(
       geometricalRepresentation => geometricalRepresentation.filter(_.isWithin(rowWithin(mins, maxes))) // filtering ones that span the cube

@@ -1,10 +1,10 @@
 package jb
 
+import jb.conf.Config
 import jb.util.Const.FILENAME_PREFIX
 import jb.util.result.{LeastBatchExhaustiveResultCatcher, ResultCatcher}
 
 object MultiRunner {
-
 
   def run(nClassif: Int, nFeatures: Int, divisions: Int): Unit = {
         val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "t", "wd", "wi")
@@ -35,6 +35,6 @@ object MultiRunner {
   }
 
   private def getResultCatcher: ResultCatcher = {
-    new LeastBatchExhaustiveResultCatcher(0.3, 10, 150, Integer.MAX_VALUE)
+    new LeastBatchExhaustiveResultCatcher(Config.treshold, Config.batch, Config.minIter, Config.maxIter)
   }
 }

@@ -57,6 +57,10 @@ object Util {
     (trainingSubsets, cvSubset, testSubset)
   }
 
+  def unionSubsets(subsets: Array[DataFrame]): DataFrame ={
+    subsets.reduce((s1, s2) => s1.union(s2))
+  }
+
   def getElCubeSize(mins: Array[Double], maxes: Array[Double], division: Int): Array[Double] = {
     mins.indices.map(i => (maxes(i) - mins(i)) / division).toArray
   }

@@ -2,13 +2,14 @@ package jb
 
 import java.util.stream.IntStream
 
+import jb.conf.Config
 import jb.io.FileReader.getRawInput
 import jb.model.{Cube, IntegratedDecisionTreeModel}
 import jb.parser.TreeParser
 import jb.prediction.Predictions.predictBaseClfs
 import jb.selector.FeatureSelectors
 import jb.server.SparkEmbedded
-import jb.tester.FullTester.{testI, testMv}
+import jb.tester.FullTester.{testI, testMv, testRF}
 import jb.util.Const._
 import jb.util.Util._
 import jb.util.functions.WeightAggregators._
@@ -41,12 +42,18 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
     val subsets = input.randomSplit(IntStream.range(0, nSubsets).mapToDouble(_ => 1D / nSubsets).toArray)
     recacheInput2Subsets(input, subsets)
     val (trainingSubsets, cvSubset, testSubset) = dispenseSubsets(subsets)
+    val trainingSubset = unionSubsets(trainingSubsets)
 
-    val dt = new DecisionTreeClassifier().setLabelCol(LABEL).setFeaturesCol(FEATURES)//.setMaxDepth(3)
+    val dt = new DecisionTreeClassifier()
+      .setLabelCol(LABEL)
+      .setFeaturesCol(FEATURES)
+      .setMaxDepth(Config.maxDepth)
+      .setImpurity(Config.impurity)
     val baseModels = trainingSubsets.map(subset => dt.fit(subset))
 
     val testedSubset = predictBaseClfs(baseModels, testSubset)
     val mvQualityMeasure = testMv(testedSubset, nClassif)
+    val rfQualityMeasure = testRF(trainingSubset, testSubset, nClassif)
 
     val rootRect = Cube(mins, maxes)
     val treeParser = new TreeParser(sumOfVolumesInv, spansMid)
@@ -60,6 +67,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
     clearCache(subsets)
 
     Array(mvQualityMeasure._1, if(mvQualityMeasure._2.isNaN) 0D else mvQualityMeasure._2,
+      rfQualityMeasure._1, if(rfQualityMeasure._2.isNaN) 0D else rfQualityMeasure._2,
       iQualityMeasure._1, if(iQualityMeasure._2.isNaN) 0D else iQualityMeasure._2)
   }
 

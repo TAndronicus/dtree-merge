@@ -7,9 +7,9 @@ import jb.util.result.{LeastBatchExhaustiveResultCatcher, ResultCatcher}
 object MultiRunner {
 
   def run(nClassif: Int, nFeatures: Int, divisions: Int): Unit = {
-        val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "t", "wd", "wi")
+        val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "wd", "wi")
     // for 4 dimensions
-//    val filenames = Array("bi", "bu", "c", "d", "i", "m", "p", "se", "t", "wd", "wi")
+//    val filenames = Array("bi", "bu", "c", "d", "i", "m", "p", "se", "wd", "wi")
 
     val runner = new Runner(nClassif, nFeatures, divisions)
     val resultCatcher = runForFiles(runner)(filenames)

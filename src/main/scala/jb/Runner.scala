@@ -16,7 +16,7 @@ import jb.util.functions.WeightAggregators._
 import jb.util.functions.WithinDeterminers._
 import jb.vectorizer.FeatureVectorizers.getFeatureVectorizer
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.DecisionTreeClassifier
+import org.apache.spark.ml.classification.{ DecisionTreeClassificationModel, DecisionTreeClassifier }
 
 class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
 
@@ -49,7 +49,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
       .setFeaturesCol(FEATURES)
       .setMaxDepth(Config.maxDepth)
       .setImpurity(Config.impurity)
-    val baseModels = trainingSubsets.map(subset => dt.fit(subset))
+    val baseModels: Array[DecisionTreeClassificationModel] = trainingSubsets.map(subset => dt.fit(subset))
 
     val testedSubset = predictBaseClfs(baseModels, testSubset)
     val mvQualityMeasure = testMv(testedSubset, nClassif)

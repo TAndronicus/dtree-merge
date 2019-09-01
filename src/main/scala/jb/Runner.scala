@@ -9,21 +9,28 @@ import jb.parser.TreeParser
 import jb.prediction.Predictions.predictBaseClfs
 import jb.selector.FeatureSelectors
 import jb.server.SparkEmbedded
-import jb.tester.FullTester.{testI, testMv, testRF}
+import jb.tester.FullTester.{testI, testMv, testWMv, testRF}
 import jb.util.Const._
 import jb.util.Util._
-import jb.util.functions.WeightAggregators._
 import jb.util.functions.WithinDeterminers._
 import jb.vectorizer.FeatureVectorizers.getFeatureVectorizer
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.{ DecisionTreeClassificationModel, DecisionTreeClassifier }
+import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, DecisionTreeClassifier}
 
-class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
+import scala.collection.mutable.ArrayBuffer
+
+class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
+
+  def appendToResults(qualityMeasures: (Double, Double), results: ArrayBuffer[Double]) = {
+    results += qualityMeasures._1
+    results += (if(qualityMeasures._2.isNaN) 0D else qualityMeasures._2)
+  }
 
   def calculateMvIScores(filename: String): Array[Double] = {
 
     //    import SparkEmbedded.ss.implicits._
     SparkEmbedded.ss.sqlContext.clearCache()
+    val results = new ArrayBuffer[Double](2 /**ACC + MCC*/ * (3 /**MV + wMV + RF*/ + divisions.length))
 
     var input = getRawInput(filename, "csv")
     if (nFeatures > input.columns.length - 1) {
@@ -52,23 +59,26 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
     val baseModels: Array[DecisionTreeClassificationModel] = trainingSubsets.map(subset => dt.fit(subset))
 
     val testedSubset = predictBaseClfs(baseModels, testSubset)
-    val mvQualityMeasure = testMv(testedSubset, nClassif)
-    val rfQualityMeasure = testRF(trainingSubset, testSubset, nClassif)
 
     val rootRect = Cube(mins, maxes)
-    val treeParser = new TreeParser(sumOfVolumes, spansMid)
-    val rects = baseModels.map(model => treeParser.dt2rect(rootRect, model.rootNode))
-    val elSize = getElCubeSize(mins, maxes, divisions)
-    val tree = treeParser.rect2dt(mins, maxes, elSize, 0, nFeatures, rects)
-    val integratedModel = new IntegratedDecisionTreeModel(tree)
-    val iPredictions = integratedModel.transform(testedSubset)
-    val iQualityMeasure = testI(iPredictions, testedSubset)
+    val treeParser = new TreeParser(Config.weightingFunction, spansMid)
+    val rects: Array[Array[Cube]] = baseModels.map(model => treeParser.dt2rect(rootRect, model.rootNode))
+
+    appendToResults(testMv(testedSubset, nClassif), results)
+    appendToResults(testWMv(testedSubset, nClassif, rects, Config.weightingFunction), results)
+    appendToResults(testRF(trainingSubset, testSubset, nClassif), results)
+
+    for (division <- divisions) {
+      val elSize = getElCubeSize(mins, maxes, division)
+      val tree = treeParser.rect2dt(mins, maxes, elSize, 0, nFeatures, rects)
+      val integratedModel = new IntegratedDecisionTreeModel(tree)
+      val iPredictions = integratedModel.transform(testedSubset)
+      appendToResults(testI(iPredictions, testedSubset), results)
+    }
 
     clearCache(subsets)
 
-    Array(mvQualityMeasure._1, if(mvQualityMeasure._2.isNaN) 0D else mvQualityMeasure._2,
-      rfQualityMeasure._1, if(rfQualityMeasure._2.isNaN) 0D else rfQualityMeasure._2,
-      iQualityMeasure._1, if(iQualityMeasure._2.isNaN) 0D else iQualityMeasure._2)
+    results.toArray
   }
 
 }

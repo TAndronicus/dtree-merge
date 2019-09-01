@@ -1,8 +1,10 @@
 package jb.tester
 
 import jb.conf.Config
+import jb.model.Cube
 import jb.util.Const.{FEATURES, LABEL, PREDICTION}
 import org.apache.spark.ml.classification.RandomForestClassifier
+import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import org.apache.spark.sql.DataFrame
 
 object FullTester {
@@ -15,6 +17,25 @@ object FullTester {
         .mapValues(_.length) // map label -> count
         .reduce((t1, t2) => if (t1._2 > t2._2) t1 else t2)) // tuple most frequent label -> count
       .map(_._1) // most frequent labels
+    val refLabels = getReferenceLabels(testSubset)
+    calculateStatistics(mvLabels, refLabels)
+  }
+
+  def getWeightFromRects(rects: Array[Array[Cube]], index: Int, value: Any, weightingFunction: Array[Cube] => Double): Double = {
+    value match {
+      case s: SparseVector => weightingFunction(rects(index).filter(cube => cube.contains(s.toArray)))
+      case d: DenseVector => weightingFunction(rects(index).filter(cube => cube.contains(d.toArray)))
+    }
+  }
+
+  def testWMv(testSubset: DataFrame, nClassif: Int, rects: Array[Array[Cube]], weightingFunction: Array[Cube] => Double): (Double, Double) = {
+    val cols = for (i <- 0.until(nClassif)) yield PREDICTION + "_" + i
+    val mvLabels = testSubset.select(FEATURES, cols: _*).collect() // Arrays with features values and predictions for every clf [features: SparseVector, prediction_0, prediction_1, ..., prediction_n]
+      .map(row => row.toSeq.tail.indices.map(index => (row.get(index + 1).asInstanceOf[Double].doubleValue(), getWeightFromRects(rects, index, row.get(0), weightingFunction))) // array of predictions - weights tuples
+        .groupBy(_._1) // map label -> array of label repetitions
+        .mapValues(_.map(_._2).sum) // map label -> sum of weights
+        .reduce((t1, t2) => if (t1._2 > t2._2) t1 else t2)) // tuple label wight greatest overall weight -> overall weight
+      .map(_._1) // label with greatest weight
     val refLabels = getReferenceLabels(testSubset)
     calculateStatistics(mvLabels, refLabels)
   }

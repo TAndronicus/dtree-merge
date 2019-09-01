@@ -6,7 +6,7 @@ import jb.util.result.{LeastBatchExhaustiveResultCatcher, ResultCatcher}
 
 object MultiRunner {
 
-  def run(nClassif: Int, nFeatures: Int, divisions: Int): Unit = {
+  def run(nClassif: Int, nFeatures: Int, divisions: Array[Int]): Unit = {
         val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "wd", "wi")
     // for 4 dimensions
 //    val filenames = Array("bi", "bu", "c", "d", "i", "m", "p", "se", "wd", "wi")
@@ -14,7 +14,7 @@ object MultiRunner {
     val runner = new Runner(nClassif, nFeatures, divisions)
     val resultCatcher = runForFiles(runner)(filenames)
 
-    resultCatcher.writeScores(Array(nClassif.toString, nFeatures.toString, divisions.toString))
+    resultCatcher.writeScores(Array(nClassif.toString, nFeatures.toString, divisions.mkString("[", "_", "]")))
   }
 
   private def runForFiles(runner: Runner)(filenames: Array[String]): ResultCatcher = {
@@ -27,7 +27,7 @@ object MultiRunner {
         }
         resultCatcher.consume(scores)
       } catch {
-        case e: Throwable => println("Caught: " + e.getMessage)
+        case e: Throwable => println("Caught: " + e.getMessage) // Print message and retry
       }
     }
     resultCatcher
@@ -37,4 +37,5 @@ object MultiRunner {
   private def getResultCatcher: ResultCatcher = {
     new LeastBatchExhaustiveResultCatcher(Config.treshold, Config.batch, Config.minIter, Config.maxIter)
   }
+
 }

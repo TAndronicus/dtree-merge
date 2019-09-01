@@ -11,8 +11,8 @@ object ExperimentPlan {
 //    val nClassifs = Array(3)
     val divisions = Array(20)
 //    val divisions = Array(20)
-    for (nC <- nClassifs; div <- divisions) {
-      MultiRunner.run(nC, nFeatures, div)
+    for (nC <- nClassifs) {
+      MultiRunner.run(nC, nFeatures, divisions)
     }
   }
 

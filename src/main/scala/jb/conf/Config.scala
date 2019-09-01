@@ -8,7 +8,7 @@ object Config {
 
   /** Result catcher */
   val treshold: Double = .3
-  val batch: Int = 10
+  val batch: Int = 2
   val minIter: Int = 50
   val maxIter: Int = Int.MaxValue
 

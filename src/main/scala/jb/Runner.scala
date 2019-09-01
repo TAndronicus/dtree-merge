@@ -56,7 +56,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Int) {
     val rfQualityMeasure = testRF(trainingSubset, testSubset, nClassif)
 
     val rootRect = Cube(mins, maxes)
-    val treeParser = new TreeParser(sumOfVolumesInv, spansMid)
+    val treeParser = new TreeParser(sumOfVolumes, spansMid)
     val rects = baseModels.map(model => treeParser.dt2rect(rootRect, model.rootNode))
     val elSize = getElCubeSize(mins, maxes, divisions)
     val tree = treeParser.rect2dt(mins, maxes, elSize, 0, nFeatures, rects)

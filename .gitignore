@@ -7,3 +7,6 @@ B/
 **/.directory
 result*
 **/*ResultCatcher*.scala
+.ensime
+ensime.sbt
+.ensime_cache/

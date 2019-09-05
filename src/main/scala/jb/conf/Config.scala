@@ -13,9 +13,9 @@ object Config {
   val weightingFunction: Array[Cube] => Double = WeightAggregators.sumOfVolumes
 
   /** Result catcher */
-  val treshold: Double = .1
-  val batch: Int = 1
-  val minIter: Int = 1
+  val treshold: Double = .3
+  val batch: Int = 2
+  val minIter: Int = 20
   val maxIter: Int = Int.MaxValue
   val numberOfReferences: Int = 3
 

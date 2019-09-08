@@ -3,10 +3,11 @@ project/
 target/
 A/
 B/
+spark-warehouse
+result*
+.ensime_cache/
 **/PlaygroundJava.java
 **/.directory
-result*
 **/*ResultCatcher*.scala
 .ensime
 ensime.sbt
-.ensime_cache/

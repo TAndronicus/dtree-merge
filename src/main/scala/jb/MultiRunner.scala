@@ -1,8 +1,12 @@
 package jb
 
 import jb.conf.Config
+import jb.model.Cube
 import jb.util.Const.FILENAME_PREFIX
+import jb.util.functions.WeightAggregators
 import jb.util.result.{LeastBatchExhaustiveResultCatcher, ResultCatcher}
+
+import scala.collection.mutable.ArrayBuffer
 
 object MultiRunner {
 
@@ -14,6 +18,7 @@ object MultiRunner {
     val runner = new Runner(nClassif, nFeatures, divisions)
     val resultCatcher = runForFiles(runner)(filenames)
 
+    resultCatcher.header = composeHeader(Config.weightingFunctions, divisions)
     resultCatcher.writeScores(Array(nClassif.toString, nFeatures.toString, divisions.mkString("[", "_", "]")))
   }
 
@@ -36,6 +41,16 @@ object MultiRunner {
 
   private def getResultCatcher: ResultCatcher = {
     new LeastBatchExhaustiveResultCatcher(Config.treshold, Config.batch, Config.minIter, Config.maxIter)
+  }
+
+  def composeHeader(weightingFunctions: Array[Array[Cube] => Double], divisions: Array[Int]): Array[String] = {
+    val header = ArrayBuffer[String](
+      "MV(ACC)",
+      "MV(MCC)",
+      "RF(ACC)",
+      "RF(MCC)",
+    )
+    header.++=(for (method <- weightingFunctions.map(WeightAggregators.names(_)); division <- "wMV" +: divisions.map("Psi_" + _); measurement <- Array("ACC", "MCC")) yield s"$division^$method($measurement)").toArray
   }
 
 }

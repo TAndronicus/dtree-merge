@@ -6,7 +6,6 @@ B/
 spark-warehouse
 result*
 .ensime_cache/
-**/PlaygroundJava.java
 **/.directory
 **/*ResultCatcher*.scala
 .ensime

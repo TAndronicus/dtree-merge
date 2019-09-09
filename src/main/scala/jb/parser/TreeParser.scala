@@ -40,8 +40,6 @@ class TreeParser(rowWithin: (Array[Double], Array[Double]) => (Array[Double], Ar
   }
 
   def rect2dt(mins: Array[Double], maxes: Array[Double], elSize: Array[Double], dim: Int, maxDim: Int, rects: Array[Array[Cube]])(implicit weightAggregator: Array[Cube] => Double): SimpleNode = {
-    if (weightAggregator == WeightAggregators.sumOfVolumes) print("sumOfVolumes")
-    if (weightAggregator == WeightAggregators.sumOfVolumesInv) print("sumOfVolumesInv")
     var diff = maxes(dim) - mins(dim)
     if (diff > elSize(dim) + EPSILON) {
       val mid = mins(dim) + floor((diff + EPSILON) / (2 * elSize(dim))) * elSize(dim)

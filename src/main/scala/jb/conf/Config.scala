@@ -20,6 +20,5 @@ object Config {
   val batch: Int = 1
   val minIter: Int = 1
   val maxIter: Int = Int.MaxValue
-  val numberOfReferences: Int = 3
 
 }

@@ -1,7 +1,8 @@
+package jb.parser
+
 import jb.model.{Cube, InternalSimpleNode, LeafSimpleNode}
 import jb.util.functions.WeightAggregators._
 import jb.util.functions.WithinDeterminers._
-import jb.parser.TreeParser
 import org.scalatest.FunSuite
 
 class TreeParserTest extends FunSuite{
@@ -25,8 +26,8 @@ class TreeParserTest extends FunSuite{
         Cube(Array(0, 0), Array(2, 2), 1)
       )
     )
-    val treeParser = new TreeParser(sumOfVolumes, spansMid)
-    val res = treeParser.calculateLabel(mins, maxes, rects)
+    val treeParser = new TreeParser(spansMid)
+    val res = treeParser.calculateLabel(sumOfVolumes, mins, maxes, rects)
     assert(res == 0D)
   }
 
@@ -46,7 +47,8 @@ class TreeParserTest extends FunSuite{
     )
 
     // when
-    val treeParser = new TreeParser(sumOfVolumes, spansMid)
+    val treeParser = new TreeParser(spansMid)
+    implicit val mapper: Array[Cube] => Double = sumOfVolumes
     val tree = treeParser.rect2dt(mins, maxes, elSizes, 0, 2, rects)
 
     // then

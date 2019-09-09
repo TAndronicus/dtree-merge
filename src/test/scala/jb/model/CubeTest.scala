@@ -1,6 +1,7 @@
-import jb.model.Cube
-import org.scalatest.FunSuite
+package jb.model
+
 import jb.util.functions.WithinDeterminers._
+import org.scalatest.FunSuite
 
 class CubeTest extends FunSuite{
 

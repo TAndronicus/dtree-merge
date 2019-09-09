@@ -21,7 +21,7 @@ import scala.collection.mutable.ArrayBuffer
 
 class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
 
-  def appendToResults(qualityMeasures: (Double, Double), results: ArrayBuffer[Double]) = {
+  private def appendToResults(qualityMeasures: (Double, Double), results: ArrayBuffer[Double]) = {
     results += qualityMeasures._1
     results += (if(qualityMeasures._2.isNaN) 0D else qualityMeasures._2)
   }
@@ -30,7 +30,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
 
     //    import SparkEmbedded.ss.implicits._
     SparkEmbedded.ss.sqlContext.clearCache()
-    val results = new ArrayBuffer[Double](2 /**ACC + MCC*/ * (3 /**MV + wMV + RF*/ + divisions.length))
+    val results = new ArrayBuffer[Double](2 /**ACC + MCC*/ * (2 /**MV + RF*/ + (1 /**wMV*/ + divisions.length) * Config.weightingFunctions.length))
 
     var input = getRawInput(filename, "csv")
     if (nFeatures > input.columns.length - 1) {
@@ -61,19 +61,23 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     val testedSubset = predictBaseClfs(baseModels, testSubset)
 
     val rootRect = Cube(mins, maxes)
-    val treeParser = new TreeParser(Config.weightingFunction, spansMid)
+    val treeParser = new TreeParser(spansMid)
     val rects: Array[Array[Cube]] = baseModels.map(model => treeParser.dt2rect(rootRect, model.rootNode))
 
     appendToResults(testMv(testedSubset, nClassif), results)
-    appendToResults(testWMv(testedSubset, nClassif, rects, Config.weightingFunction), results)
     appendToResults(testRF(trainingSubset, testSubset, nClassif), results)
 
-    for (division <- divisions) {
-      val elSize = getElCubeSize(mins, maxes, division)
-      val tree = treeParser.rect2dt(mins, maxes, elSize, 0, nFeatures, rects)
-      val integratedModel = new IntegratedDecisionTreeModel(tree)
-      val iPredictions = integratedModel.transform(testedSubset)
-      appendToResults(testI(iPredictions, testedSubset), results)
+    for (weightingFunction <- Config.weightingFunctions) {
+      implicit val mapping: Array[Cube] => Double = weightingFunction
+      appendToResults(testWMv(testedSubset, nClassif, rects, mapping), results)
+
+      for (division <- divisions) {
+        val elSize = getElCubeSize(mins, maxes, division)
+        val tree = treeParser.rect2dt(mins, maxes, elSize, 0, nFeatures, rects)
+        val integratedModel = new IntegratedDecisionTreeModel(tree)
+        val iPredictions = integratedModel.transform(testedSubset)
+        appendToResults(testI(iPredictions, testedSubset), results)
+      }
     }
 
     clearCache(subsets)

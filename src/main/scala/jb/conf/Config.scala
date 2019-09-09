@@ -10,7 +10,10 @@ object Config {
   val impurity = "gini"
 
   /** Mapping */
-  val weightingFunction: Array[Cube] => Double = WeightAggregators.sumOfVolumes
+  val weightingFunctions: Array[Array[Cube] => Double] = Array(
+    WeightAggregators.sumOfVolumes,
+    WeightAggregators.sumOfVolumesInv,
+  )
 
   /** Result catcher */
   val treshold: Double = .1

@@ -8,6 +8,9 @@ object Config {
   /** Models */
   val maxDepth: Int = 3
   val impurity = "gini"
+  val nFeatures = 2
+  val nClassifs = Array(3, 5, 7, 9)
+  val divisions = Array(20, 40, 60)
 
   /** Mapping */
   val weightingFunctions: Array[Array[Cube] => Double] = Array(

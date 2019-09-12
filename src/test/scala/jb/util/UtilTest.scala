@@ -83,13 +83,13 @@ class UtilTest extends FunSuite {
     val divisions = 5
     val yStep = 3
     val expectedXDivision = Array(0, .2, .4, .6, .8, 1)
-    val expectedXIndices = Array(0, 1, 2, 3, 4, 5)
     val withoutStep = Array(0, .2, .4, .6, .8, 1)
     val buffer = ArrayBuffer(0d)
     withoutStep.take(withoutStep.length - 1).foreach(el => buffer += el + yStep * 1d / (Config.numberOfDisplacements * divisions))
     buffer += 1
     val expectedYDivision = buffer.toArray
-    val expectedYIndices = Array(0, 1, 2, 3, 4, 5, 6)
+    val expectedXIndices = Array(0, 0)
+    val expectedYIndices = Array(expectedXDivision.length - 1, expectedYDivision.length - 1)
 
     // when
     val (xId, yId, split) = Util.getDisplacementSetup(divisions, 0, yStep)

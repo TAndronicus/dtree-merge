@@ -30,7 +30,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
 
     //    import SparkEmbedded.ss.implicits._
     SparkEmbedded.ss.sqlContext.clearCache()
-    val results = new ArrayBuffer[Double](2 /**ACC + MCC*/ * (2 /**MV + RF*/ + (1 /**wMV*/ + divisions.length) * Config.weightingFunctions.length))
+    val results = new ArrayBuffer[Double](2 /**ACC + MCC*/ * (2 /**MV + RF*/ + (1 /**wMV*/ + divisions.length * math.pow(Config.numberOfDisplacements, 2).intValue()) * Config.weightingFunctions.length))
 
     var input = getRawInput(filename, "csv")
     if (nFeatures > input.columns.length - 1) {
@@ -72,11 +72,13 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
       appendToResults(testWMv(testedSubset, nClassif, rects, mapping), results)
 
       for (division <- divisions) {
-        val elSize = getElCubeSize(mins, maxes, division)
-        val tree = treeParser.rect2dt(mins, maxes, elSize, 0, nFeatures, rects)
-        val integratedModel = new IntegratedDecisionTreeModel(tree)
-        val iPredictions = integratedModel.transform(testedSubset)
-        appendToResults(testI(iPredictions, testedSubset), results)
+        for (xStep <- 0 until Config.numberOfDisplacements; yStep <- 0 until Config.numberOfDisplacements) {
+          val (minIndices, maxIndices, splits) = getDisplacementSetup(division, xStep, yStep)
+          val tree = treeParser.rect2dt(minIndices, maxIndices, 0, nFeatures, rects, splits)
+          val integratedModel = new IntegratedDecisionTreeModel(tree)
+          val iPredictions = integratedModel.transform(testedSubset)
+          appendToResults(testI(iPredictions, testedSubset), results)
+        }
       }
     }
 

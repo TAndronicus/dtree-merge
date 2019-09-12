@@ -11,6 +11,7 @@ object Config {
   val nFeatures = 2
   val nClassifs = Array(3, 5, 7, 9)
   val divisions = Array(20, 40, 60)
+  val numberOfDisplacements = 5
 
   /** Mapping */
   val weightingFunctions: Array[Array[Cube] => Double] = Array(

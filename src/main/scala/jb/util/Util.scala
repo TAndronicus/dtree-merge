@@ -1,5 +1,6 @@
 package jb.util
 
+import jb.conf.Config
 import jb.util.Const._
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.feature.ChiSqSelectorModel
@@ -75,6 +76,20 @@ object Util {
       result(midIndex) = partialResult
     }
     result
+  }
+
+  def getDisplacementSetup(division: Int, xStep: Int, yStep: Int): (Array[Int], Array[Int], Array[Array[Double]]) = {
+    if (Config.numberOfDisplacements == 0) {
+      (Array(0, 0), Array(division + 1, division + 1), Array(0d.to(1).by(1d / division).toArray, 0d.to(1).by(1d / division).toArray))
+    } else {
+      val xDivision = getDimensionDivision(division, xStep)
+      val yDivision = getDimensionDivision(division, yStep)
+      (Array(0, 0), Array(xDivision.length - 1, yDivision.length - 1), Array(xDivision, yDivision))
+    }
+  }
+
+  def getDimensionDivision(division: Int, step: Int): Array[Double] = {
+    if (step == 0) 0d.to(1).by(1d / division).toArray else 0d +: (step * 1d / (division * Config.numberOfDisplacements)).to(1).by(1d / division).toArray :+ 1d
   }
 
 }

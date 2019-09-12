@@ -1,8 +1,6 @@
 package jb.parser
 
 import jb.model._
-import jb.util.Const.EPSILON
-import jb.util.functions.WeightAggregators
 import org.apache.spark.ml.tree.{ContinuousSplit, InternalNode, Node}
 
 import scala.math.floor
@@ -39,25 +37,32 @@ class TreeParser(rowWithin: (Array[Double], Array[Double]) => (Array[Double], Ar
     ).groupBy(identity).reduce((l1, l2) => if (l1._2.length > l2._2.length) l1 else l2)._1 // chosing label with the greatest count
   }
 
-  def rect2dt(mins: Array[Double], maxes: Array[Double], elSize: Array[Double], dim: Int, maxDim: Int, rects: Array[Array[Cube]])(implicit weightAggregator: Array[Cube] => Double): SimpleNode = {
-    var diff = maxes(dim) - mins(dim)
-    if (diff > elSize(dim) + EPSILON) {
-      val mid = mins(dim) + floor((diff + EPSILON) / (2 * elSize(dim))) * elSize(dim)
-      val (newMins, newMaxes) = (mins.clone(), maxes.clone())
-      newMins(dim) = mid
-      newMaxes(dim) = mid
-      InternalSimpleNode(rect2dt(mins, newMaxes, elSize, dim, maxDim, rects), rect2dt(newMins, maxes, elSize, dim, maxDim, rects), new SimpleSplit(dim, mid))
+  def rect2dt(mins: Array[Int], maxes: Array[Int], dim: Int, maxDim: Int, rects: Array[Array[Cube]], splits: Array[Array[Double]])
+             (implicit weightAggregator: Array[Cube] => Double): SimpleNode = {
+    if (maxes(dim) - mins(dim) > 1) {
+      stepDown(mins, maxes, dim, maxDim, rects, splits)
     } else if (dim < maxDim - 1) {
-      val newDim = dim + 1
-      diff = maxes(newDim) - mins(newDim)
-      val mid = mins(newDim) + floor((diff + EPSILON) / (2 * elSize(newDim))) * elSize(newDim)
-      val (newMins, newMaxes) = (mins.clone(), maxes.clone())
-      newMins(newDim) = mid
-      newMaxes(newDim) = mid
-      InternalSimpleNode(rect2dt(mins, newMaxes, elSize, newDim, maxDim, rects), rect2dt(newMins, maxes, elSize, newDim, maxDim, rects), new SimpleSplit(newDim, mid))
+      stepDown(mins, maxes, dim + 1, maxDim, rects, splits)
     } else {
-      LeafSimpleNode(calculateLabel(weightAggregator, mins, maxes, rects))
+      LeafSimpleNode(calculateLabel(weightAggregator, getBoundaries(mins, splits), getBoundaries(maxes, splits), rects))
     }
+  }
+
+  private def stepDown(mins: Array[Int], maxes: Array[Int], dim: Int, maxDim: Int, rects: Array[Array[Cube]], splits: Array[Array[Double]])
+                      (implicit weightAggregator: Array[Cube] => Double): InternalSimpleNode = {
+    val mid: Int = getMid(mins, maxes, dim)
+    val (newMins, newMaxes) = (mins.clone(), maxes.clone())
+    newMins(dim) = mid
+    newMaxes(dim) = mid
+    InternalSimpleNode(rect2dt(mins, newMaxes, dim, maxDim, rects, splits), rect2dt(newMins, maxes, dim, maxDim, rects, splits), new SimpleSplit(dim, splits(dim)(mid)))
+  }
+
+  private def getBoundaries(splitIndices: Array[Int], splits: Array[Array[Double]]): Array[Double] = {
+    splitIndices.indices.map(index => splits(index)(splitIndices(index))).toArray
+  }
+
+  private def getMid(mins: Array[Int], maxes: Array[Int], dim: Int): Int = {
+    floor((mins(dim) + maxes(dim)) / 2).intValue()
   }
 
 }

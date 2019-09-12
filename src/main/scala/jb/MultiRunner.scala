@@ -19,7 +19,8 @@ object MultiRunner {
     val resultCatcher = runForFiles(runner)(filenames)
 
     resultCatcher.header = composeHeader(Config.weightingFunctions, divisions)
-    resultCatcher.writeScores(Array(nClassif.toString, nFeatures.toString, divisions.mkString("[", "_", "]")))
+    /** numberOfClassifiers_numberOfDimensions_[numberOfDivisions]_numberOfDisplacements*/
+    resultCatcher.writeScores(Array(nClassif.toString, nFeatures.toString, divisions.mkString("[", "_", "]"), Config.numberOfDisplacements.toString))
   }
 
   private def runForFiles(runner: Runner)(filenames: Array[String]): ResultCatcher = {

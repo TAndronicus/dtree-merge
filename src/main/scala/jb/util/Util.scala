@@ -78,6 +78,7 @@ object Util {
     result
   }
 
+  @Hardcoded("number of dimensions set to 2: x and y")
   def getDisplacementSetup(division: Int, xStep: Int, yStep: Int): (Array[Int], Array[Int], Array[Array[Double]]) = {
     if (Config.numberOfDisplacements == 0) {
       (Array(0, 0), Array(division + 1, division + 1), Array(0d.to(1).by(1d / division).toArray, 0d.to(1).by(1d / division).toArray))

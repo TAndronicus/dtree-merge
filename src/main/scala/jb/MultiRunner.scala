@@ -11,15 +11,15 @@ import scala.collection.mutable.ArrayBuffer
 object MultiRunner {
 
   def run(nClassif: Int, nFeatures: Int, divisions: Array[Int]): Unit = {
-        val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "wd", "wi")
+    val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "wd", "wi")
     // for 4 dimensions
-//    val filenames = Array("bi", "bu", "c", "d", "i", "m", "p", "se", "wd", "wi")
 
     val runner = new Runner(nClassif, nFeatures, divisions)
     val resultCatcher = runForFiles(runner)(filenames)
 
     resultCatcher.header = composeHeader(Config.weightingFunctions, divisions)
-    /** numberOfClassifiers_numberOfDimensions_[numberOfDivisions]_numberOfDisplacements*/
+
+    /** numberOfClassifiers_numberOfDimensions_[numberOfDivisions]_numberOfDisplacements */
     resultCatcher.writeScores(Array(nClassif.toString, nFeatures.toString, divisions.mkString("[", "_", "]"), Config.numberOfDisplacements.toString))
   }
 

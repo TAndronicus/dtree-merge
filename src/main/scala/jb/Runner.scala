@@ -42,6 +42,9 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     val dataPrepPipeline = new Pipeline().setStages(Array(featureVectorizer, featureSelector))
     val dataPrepModel = dataPrepPipeline.fit(input)
     input = optimizeInput(input, dataPrepModel)
+    val a: Array[Long] = input.groupBy("label").count().select("count").collect().map(r => r.get(0)).map(_.asInstanceOf[Long])
+    println(filename)
+    println(a.min.toDouble / a.max)
 
     val (mins, maxes) = getExtrema(input, getSelectedFeatures(dataPrepModel))
 

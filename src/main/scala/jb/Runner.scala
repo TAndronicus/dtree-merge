@@ -54,12 +54,12 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     val (trainingSubsets, cvSubset, testSubset) = dispenseSubsets(subsets)
     val trainingSubset = unionSubsets(trainingSubsets)
 
-    val dt = new DecisionTreeClassifier()
+    def getEmptyDT = new DecisionTreeClassifier()
       .setLabelCol(LABEL)
       .setFeaturesCol(FEATURES)
       .setMaxDepth(Config.maxDepth)
       .setImpurity(Config.impurity)
-    val baseModels: Array[DecisionTreeClassificationModel] = trainingSubsets.map(subset => dt.fit(subset))
+    val baseModels: Array[DecisionTreeClassificationModel] = trainingSubsets.map(subset => getEmptyDT.fit(subset))
 
     val testedSubset = predictBaseClfs(baseModels, testSubset)
 

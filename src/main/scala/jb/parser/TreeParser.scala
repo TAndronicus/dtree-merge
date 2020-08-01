@@ -5,7 +5,7 @@ import org.apache.spark.ml.tree.{ContinuousSplit, InternalNode, Node}
 
 import scala.math.floor
 
-class TreeParser(rowWithin: (Array[Double], Array[Double]) => (Array[Double], Array[Double]) => Boolean) {
+class TreeParser(rowWithinStrategy: (Array[Double], Array[Double]) => (Array[Double], Array[Double]) => Boolean) {
 
   // TODO: optimize cpu
   def dt2rect(parent: Cube, node: Node): Array[Cube] = {
@@ -30,7 +30,7 @@ class TreeParser(rowWithin: (Array[Double], Array[Double]) => (Array[Double], Ar
   // TODO: optimize cpu
   def calculateLabel(weightAggregator: Array[Cube] => Double, mins: Array[Double], maxes: Array[Double], rects: Array[Array[Cube]]): Double = {
     rects.map(
-      geometricalRepresentation => geometricalRepresentation.filter(_.isWithin(rowWithin(mins, maxes))) // filtering ones that span the cube
+      geometricalRepresentation => geometricalRepresentation.filter(_.isWithin(rowWithinStrategy(mins, maxes))) // filtering ones that span the cube
         .groupBy(_.label)
         .mapValues(weightAggregator) // sum weights (volumes)
         .reduce((a1, a2) => if (a1._2 > a2._2) a1 else a2)._1 // choosing label with the greatest value

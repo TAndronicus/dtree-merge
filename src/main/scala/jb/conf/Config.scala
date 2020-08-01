@@ -6,7 +6,7 @@ import jb.util.functions.WeightAggregators
 object Config {
 
   /** Models */
-  val maxDepth: Int = 3
+  val maxDepth: Int = 5
   val impurity = "gini"
   val nFeatures = 2
   val nClassifs = Array(5)

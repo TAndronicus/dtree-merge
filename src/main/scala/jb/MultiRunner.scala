@@ -4,7 +4,7 @@ import jb.conf.Config
 import jb.model.{Cube, Measurements}
 import jb.util.Const.FILENAME_PREFIX
 import jb.util.functions.WeightAggregators
-import jb.util.result.{LeastBatchExhaustiveResultCatcher, ResultCatcher}
+import jb.util.result.{GeneralCatcher, ResultCatcher}
 
 object MultiRunner {
 
@@ -39,7 +39,7 @@ object MultiRunner {
   }
 
   private def getResultCatcher: ResultCatcher = {
-    new LeastBatchExhaustiveResultCatcher(Config.treshold, Config.batch, Config.minIter, Config.maxIter)
+    new GeneralCatcher(Config.treshold, Config.batch, Config.minIter, Config.maxIter)
   }
 
   def composeHeader(weightingFunctions: Array[Array[Cube] => Double], divisions: Array[Int]): Array[String] = {

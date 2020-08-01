@@ -2,13 +2,10 @@ package jb.tester
 
 import jb.conf.Config
 import jb.model.Cube
-import jb.server.SparkEmbedded
 import jb.util.Const.{FEATURES, LABEL, PREDICTION}
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
-import jb.server.SparkEmbedded.ss.sqlContext.implicits._
 
 object FullTester {
 
@@ -57,11 +54,6 @@ object FullTester {
   }
 
   private def calculateStatistics(predLabels: Array[Double], refLabels: Array[Double]): (Double, Double) = {
-//    val metrics = new BinaryClassificationMetrics(SparkEmbedded.ss.sparkContext.parallelize(predLabels.zip(refLabels)))
-//    println(metrics.precisionByThreshold().collect().map(_._2).max)
-//    println(metrics.areaUnderROC())
-//    println(metrics.areaUnderPR())
-//    metrics.unpersist()
     val matched = predLabels.indices.map(i => (predLabels(i), refLabels(i))).groupBy(identity).mapValues(_.size)
     val (tp, tn, fp, fn) = (matched.getOrElse((1, 1), 0), matched.getOrElse((0, 0), 0), matched.getOrElse((1, 0), 0), matched.getOrElse((0, 1), 0))
     ((tp + tn).toDouble / (tp + tn + fp + fn),

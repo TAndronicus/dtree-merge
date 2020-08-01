@@ -40,3 +40,7 @@ case class Measurements(
   )
 
 }
+
+object Measurements {
+  val meas: Array[String] = Array("acc", "precMi", "recMi", "fMi", "precM", "recM", "fM")
+}

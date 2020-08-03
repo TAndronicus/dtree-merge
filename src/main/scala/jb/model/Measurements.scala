@@ -18,25 +18,4 @@ case class Measurements(
     recallM: Double,
     fScoreM: Double
   )
-
-  def +(other: Measurements): Measurements = Measurements(
-    acc + other.acc,
-    precissionMi + other.precissionMi,
-    recallMi + other.recallMi,
-    fScoreMi + other.fScoreMi,
-    precissionM + other.precissionM,
-    recallM + other.recallM,
-    fScoreM + other.fScoreM
-  )
-
-  def /(divisor: Double): Measurements = Measurements(
-    acc / divisor,
-    precissionMi / divisor,
-    recallMi / divisor,
-    fScoreMi / divisor,
-    precissionM / divisor,
-    recallM / divisor,
-    fScoreM / divisor
-  )
-
 }

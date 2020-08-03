@@ -43,9 +43,4 @@ case class Measurements(
 
 object Measurements {
   val meas: Array[String] = Array("acc", "precMi", "recMi", "fMi", "precM", "recM", "fM")
-  val numberOfMetrics = 7
-
-  def integratedQuality(array: Array[Array[Double]]): Double = array
-    .map(a => if (a(2 * numberOfMetrics) > a(numberOfMetrics) || a(2 * numberOfMetrics) > a(0)) 1 else 0)
-    .sum.toDouble / array.length
 }

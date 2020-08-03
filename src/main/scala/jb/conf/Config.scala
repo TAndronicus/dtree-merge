@@ -20,9 +20,9 @@ object Config {
   )
 
   /** Result catcher */
-  val treshold: Double = .4
-  val batch: Int = 4
-  val minIter: Int = 10
+  val treshold: Double = .1
+  val batch: Int = 1
+  val minIter: Int = 2
   val maxIter: Int = 200
 
   /** Other */

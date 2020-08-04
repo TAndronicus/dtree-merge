@@ -9,7 +9,7 @@ import jb.parser.TreeParser
 import jb.prediction.Predictions.predictBaseClfs
 import jb.selector.FeatureSelectors
 import jb.server.SparkEmbedded
-import jb.tester.FullTester.{testI, testMv, testWMv, testRF}
+import jb.tester.FullTester.{testI, testMv, testRF, testWMv}
 import jb.util.Const._
 import jb.util.Util._
 import jb.util.functions.WithinDeterminers._
@@ -49,7 +49,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     val subsets = input.randomSplit(IntStream.range(0, nSubsets).mapToDouble(_ => 1D / nSubsets).toArray)
     recacheInput2Subsets(input, subsets)
     val (trainingSubsets, cvSubset, testSubset) = dispenseSubsets(subsets)
-    val trainingSubset = if (Config.joinTrainingAndValidationSet) unionSubsets(trainingSubsets)
+    val trainingSubset = if (Config.joinTrainingAndValidationSet) unionSubsets(trainingSubsets :+ cvSubset) else unionSubsets(trainingSubsets)
 
     def getEmptyDT = new DecisionTreeClassifier()
       .setLabelCol(LABEL)

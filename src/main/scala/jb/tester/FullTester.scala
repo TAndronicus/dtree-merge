@@ -73,8 +73,7 @@ object FullTester {
 
   def fScore(confusionMatrix: Tuple4[Double, Double, Double, Double], beta: Double): Double = {
     val (tp, tn, fp, fn) = confusionMatrix
-    (math.pow(beta, 2) + 1) * tp / ((math.pow(beta, 2) + 1) * tp) + math.pow(beta, 2) * fn + fp
-    )
+    (math.pow(beta, 2) + 1) * tp / (((math.pow(beta, 2) + 1) * tp) + math.pow(beta, 2) * fn + fp)
   }
 
   def testRF(trainingSubset: DataFrame, testSubset: DataFrame, nClassif: Int): Measurements = {

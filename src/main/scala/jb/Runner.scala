@@ -4,7 +4,7 @@ import java.util.stream.IntStream
 
 import jb.conf.Config
 import jb.io.FileReader.getRawInput
-import jb.model.{Cube, IntegratedDecisionTreeModel}
+import jb.model.{Cube, IntegratedDecisionTreeModel, Measurements}
 import jb.parser.TreeParser
 import jb.prediction.Predictions.predictBaseClfs
 import jb.selector.FeatureSelectors
@@ -17,20 +17,12 @@ import jb.vectorizer.FeatureVectorizers.getFeatureVectorizer
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, DecisionTreeClassifier}
 
-import scala.collection.mutable.ArrayBuffer
-
 class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
-
-  private def appendToResults(qualityMeasures: (Double, Double), results: ArrayBuffer[Double]) = {
-    results += qualityMeasures._1
-    results += (if(qualityMeasures._2.isNaN) 0D else qualityMeasures._2)
-  }
 
   def calculateMvIScores(filename: String): Array[Double] = {
 
     //    import SparkEmbedded.ss.implicits._
     SparkEmbedded.ss.sqlContext.clearCache()
-    val results = new ArrayBuffer[Double](2 /**ACC + MCC*/ * (2 /**MV + RF*/ + (1 /**wMV*/ + divisions.length * math.pow(Config.numberOfDisplacements, 2).intValue()) * Config.weightingFunctions.length))
 
     var input = getRawInput(filename, "csv")
     if (nFeatures > input.columns.length - 1) {
@@ -56,6 +48,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
       .setFeaturesCol(FEATURES)
       .setMaxDepth(Config.maxDepth)
       .setImpurity(Config.impurity)
+
     val baseModels: Array[DecisionTreeClassificationModel] = trainingSubsets.map(subset => getEmptyDT.fit(subset))
 
     val testedSubset = predictBaseClfs(baseModels, testSubset)
@@ -64,27 +57,32 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     val treeParser = new TreeParser(spansMid)
     val rects: Array[Array[Cube]] = baseModels.map(model => treeParser.dt2rect(rootRect, model.rootNode))
 
-    appendToResults(testMv(testedSubset, nClassif), results)
-    appendToResults(testRF(trainingSubset, testSubset, nClassif), results)
+    val mvQuality = testMv(testedSubset, nClassif)
+    val rfQuality = testRF(trainingSubset, testSubset, nClassif)
 
-    for (weightingFunction <- Config.weightingFunctions) {
-      implicit val mapping: Array[Cube] => Double = weightingFunction
-      appendToResults(testWMv(testedSubset, nClassif, rects, mapping), results)
+    val weightedMeasurementsNumber = Config.numberOfDisplacements + 1
+    val weightedQuality = new Array[Measurements](Config.weightingFunctions.length * weightedMeasurementsNumber)
 
-      for (division <- divisions) {
+    for ((weightingFunction, mappingIndex) <- Config.weightingFunctions.zipWithIndex) {
+      weightedQuality(mappingIndex * weightedMeasurementsNumber) = testWMv(testedSubset, nClassif, rects, weightingFunction)
+
+      for ((division, divIndex) <- divisions.zipWithIndex) {
+        var divMeasurements: List[Measurements] = Nil
         for (xStep <- 0 until Config.numberOfDisplacements; yStep <- 0 until Config.numberOfDisplacements) {
           val (minIndices, maxIndices, splits) = getDisplacementSetup(division, xStep, yStep)
-          val tree = treeParser.rect2dt(minIndices, maxIndices, 0, nFeatures, rects, splits)
+          val tree = treeParser.rect2dt(minIndices, maxIndices, 0, nFeatures, rects, splits)(weightingFunction)
           val integratedModel = new IntegratedDecisionTreeModel(tree)
           val iPredictions = integratedModel.transform(testedSubset)
-          appendToResults(testI(iPredictions, testedSubset), results)
+          divMeasurements = testI(iPredictions, testedSubset) :: divMeasurements
         }
+        weightedQuality(mappingIndex * weightedMeasurementsNumber + divIndex + 1) = divMeasurements
+          .reduce(_ + _) / math.pow(Config.numberOfDisplacements, 2)
       }
     }
 
     clearCache(subsets)
 
-    results.toArray
+    (Array(mvQuality, rfQuality) ++ weightedQuality).flatMap(_.toArray)
   }
 
 }

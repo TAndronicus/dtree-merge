@@ -23,6 +23,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
 
     //    import SparkEmbedded.ss.implicits._
     SparkEmbedded.ss.sqlContext.clearCache()
+    println(filename)
 
     var input = getRawInput(filename, "csv")
     if (nFeatures > input.columns.length - 1) {
@@ -60,7 +61,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     val mvQuality = testMv(testedSubset, nClassif)
     val rfQuality = testRF(trainingSubset, testSubset, nClassif)
 
-    val weightedMeasurementsNumber = Config.numberOfDisplacements + 1
+    val weightedMeasurementsNumber = 1 + divisions.length
     val weightedQuality = new Array[Measurements](Config.weightingFunctions.length * weightedMeasurementsNumber)
 
     for ((weightingFunction, mappingIndex) <- Config.weightingFunctions.zipWithIndex) {

@@ -9,9 +9,11 @@ object Config {
   val maxDepth: Int = 5
   val impurity = "gini"
   val nFeatures = 2
-  val nClassifs = Array(5)
-  val divisions = Array(20, 40, 60)
-  val numberOfDisplacements = 5
+  val nClassifs: Array[Int] = Array(5)
+  val divisions: Array[Int] = Array(20, 40, 60)
+  val numberOfDisplacements = 2
+  val referenceAlgorithms: Array[String] = Array("MV", "RF")
+  val weightedReferenceAlgorithms: Array[String] = Array("wMV")
 
   /** Mapping */
   val weightingFunctions: Array[Array[Cube] => Double] = Array(

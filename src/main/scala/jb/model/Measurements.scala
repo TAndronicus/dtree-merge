@@ -1,5 +1,7 @@
 package jb.model
 
+import jb.util.Util.withRequirement
+
 case class Measurements(
                          acc: Double,
                          precision: Double,
@@ -9,9 +11,12 @@ case class Measurements(
                          auc: Double
                        ) {
 
-  def toArray: Array[Double] = Array(
-    acc, precision, recall, fscore, specificity, acc
-  )
+  def toArray: Array[Double] =
+    withRequirement[Array[Double]](
+      Array(acc, precision, recall, fscore, specificity, auc),
+      _.length == Measurements.numberOfMetrics
+    )
+
 
   def +(other: Measurements): Measurements = Measurements(
     acc + other.acc,
@@ -31,7 +36,6 @@ case class Measurements(
     auc / divisor
   )
 
-
 }
 
 object Measurements {
@@ -40,5 +44,12 @@ object Measurements {
   def integratedQuality(array: Array[Array[Double]]): Double = array
     .map(a => if (a(2 * numberOfMetrics) > a(numberOfMetrics) || a(2 * numberOfMetrics) > a(0)) 1 else 0)
     .sum.toDouble / array.length
+
+  def names: Array[String] = {
+    withRequirement[Array[String]](
+      Array("acc", "precision", "recall", "fscore", "specificity", "auc"),
+      _.length == numberOfMetrics
+    )
+  }
 
 }

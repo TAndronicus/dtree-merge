@@ -1,12 +1,10 @@
 package jb
 
 import jb.conf.Config
-import jb.model.Cube
+import jb.model.{Cube, Measurements}
 import jb.util.Const.FILENAME_PREFIX
 import jb.util.functions.WeightAggregators
 import jb.util.result.{LeastBatchExhaustiveResultCatcher, ResultCatcher}
-
-import scala.collection.mutable.ArrayBuffer
 
 object MultiRunner {
 
@@ -45,13 +43,20 @@ object MultiRunner {
   }
 
   def composeHeader(weightingFunctions: Array[Array[Cube] => Double], divisions: Array[Int]): Array[String] = {
-    val header = ArrayBuffer[String](
-      "MV(ACC)",
-      "MV(MCC)",
-      "RF(ACC)",
-      "RF(MCC)",
-    )
-    header.++=(for (method <- weightingFunctions.map(WeightAggregators.names(_)); division <- "wMV" +: divisions.map("Psi_" + _); measurement <- Array("ACC", "MCC")) yield s"$division^$method($measurement)").toArray
+    (for {
+      algorithm <- Config.referenceAlgorithms
+      meas <- Measurements.names
+    } yield s"$algorithm($meas)") ++
+      (for {
+        algorithm <- Config.weightedReferenceAlgorithms
+        weightingFunction <- weightingFunctions.map(WeightAggregators.names)
+        meas <- Measurements.names
+      } yield s"${algorithm}_$weightingFunction($meas)") ++
+      (for {
+        div <- divisions
+        weightingFunction <- weightingFunctions.map(WeightAggregators.names)
+        meas <- Measurements.names
+      } yield s"I_$weightingFunction^$div($meas)")
   }
 
 }

@@ -93,4 +93,9 @@ object Util {
     if (step == 0) 0d.to(1).by(1d / division).toArray else 0d +: (step * 1d / (division * Config.numberOfDisplacements)).to(1).by(1d / division).toArray :+ 1d
   }
 
+  def withRequirement[A](value: A, req: A => Boolean): A = {
+    require(req.apply(value))
+    value
+  }
+
 }

@@ -41,9 +41,20 @@ case class Measurements(
 object Measurements {
   val numberOfMetrics: Int = 6
 
-  def integratedQuality(array: Array[Array[Double]]): Double = array
-    .map(a => if (a(2 * numberOfMetrics) > a(numberOfMetrics) || a(2 * numberOfMetrics) > a(0)) 1 else 0)
-    .sum.toDouble / array.length
+  def integratedQuality(array: Array[Array[Double]]): Double = {
+    array
+      .map(integratedQualityValue)
+      .sum.toDouble / array.length
+  }
+
+  def integratedQualityValue(array: Array[Double]): Int = {
+    if ((array(4 * numberOfMetrics) > array(0) && array(4 * numberOfMetrics) > array(numberOfMetrics))
+      || (array(5 * numberOfMetrics) > array(0) && array(5 * numberOfMetrics) > array(numberOfMetrics))
+      || (array(6 * numberOfMetrics) > array(0) && array(6 * numberOfMetrics) > array(numberOfMetrics))
+      || (array(7 * numberOfMetrics) > array(0) && array(7 * numberOfMetrics) > array(numberOfMetrics))
+      || (array(8 * numberOfMetrics) > array(0) && array(8 * numberOfMetrics) > array(numberOfMetrics))
+      || (array(9 * numberOfMetrics) > array(0) && array(9 * numberOfMetrics) > array(numberOfMetrics))) 1 else 0
+  }
 
   def names: Array[String] = {
     withRequirement[Array[String]](

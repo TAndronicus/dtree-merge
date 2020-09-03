@@ -7,7 +7,7 @@ import org.apache.spark.sql.DataFrame
 object FileReader {
 
   def getRawInput(path: String, format: String): DataFrame = {
-    val input = SparkEmbedded.ss.read.option("inferSchema", "true").format(format).load(path)
+    val input = SparkEmbedded.ss.read.option("inferSchema", "true").format(format).load(path).limit(10000)
     input.withColumnRenamed(input.columns.last, SPARSE_LABEL)
   }
 

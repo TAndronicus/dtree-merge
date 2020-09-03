@@ -4,6 +4,7 @@ import jb.conf.Config
 import jb.util.Const._
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.feature.ChiSqSelectorModel
+import org.apache.spark.ml.functions.vector_to_array
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
@@ -45,10 +46,12 @@ object Util {
   }
 
   def optimizeInput(input: DataFrame, dataPrepModel: PipelineModel): DataFrame = {
+    val selected = Util.getSelectedFeatures(dataPrepModel)
     dataPrepModel.transform(input).select(
-      Util.getSelectedFeatures(dataPrepModel).map(
-        item => col(COL_PREFIX + item)
-      ).+:(col(FEATURES)).+:(col(LABEL)): _*
+      col(FEATURES),
+      col(LABEL),
+      vector_to_array(col(FEATURES)).getItem(0).alias(s"_c${selected(0)}"),
+      vector_to_array(col(FEATURES)).getItem(1).alias(s"_c${selected(1)}")
     ).persist
   }
 

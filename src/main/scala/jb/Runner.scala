@@ -7,6 +7,7 @@ import jb.io.FileReader.getRawInput
 import jb.model.{Cube, IntegratedDecisionTreeModel, Measurements}
 import jb.parser.TreeParser
 import jb.prediction.Predictions.predictBaseClfs
+import jb.scaler.FeatureScalers
 import jb.selector.FeatureSelectors
 import jb.server.SparkEmbedded
 import jb.tester.FullTester.{testI, testMv, testRF, testWMv}
@@ -33,7 +34,8 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     }
     val featureVectorizer = getFeatureVectorizer(input.columns)
     val featureSelector = FeatureSelectors.get_chi_sq_selector(nFeatures)
-    val dataPrepPipeline = new Pipeline().setStages(Array(featureVectorizer, featureSelector))
+    val scaler = FeatureScalers.minMaxScaler
+    val dataPrepPipeline = new Pipeline().setStages(Array(featureVectorizer, featureSelector, scaler))
     val dataPrepModel = dataPrepPipeline.fit(input)
     input = optimizeInput(input, dataPrepModel)
 

@@ -11,7 +11,7 @@ object FeatureSelectors {
       setNumTopFeatures(nFeatures).
       setFeaturesCol(SPARSE_FEATURES).
       setLabelCol(LABEL).
-      setOutputCol(FEATURES)
+      setOutputCol(NON_SCALED_FEATURES)
   }
 
 }

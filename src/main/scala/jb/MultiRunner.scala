@@ -9,7 +9,36 @@ import jb.util.result.{LeastBatchExhaustiveResultCatcher, ResultCatcher}
 object MultiRunner {
 
   def run(nClassif: Int, nFeatures: Int, divisions: Array[Int]): Unit = {
-    val filenames = Array("bi", "bu", "c", "d", "h", "i", "m", "p", "se", "wd", "wi")
+    val filenames = Array(
+      "aa",
+      "ap",
+      "ba",
+      "bi",
+      "bu",
+      "c",
+      "d",
+      "ec",
+      "h",
+      "i",
+      "ir",
+      "m",
+      "ma",
+      "p",
+      "ph",
+      "pi",
+      "ri",
+      "sb",
+      "se",
+      "t",
+      "te",
+      "th",
+      "ti",
+      "wd",
+      "wi",
+      "wr",
+      "ww",
+      "ye"
+    )
     // for 4 dimensions
 
     val runner = new Runner(nClassif, nFeatures, divisions)
@@ -24,15 +53,15 @@ object MultiRunner {
   private def runForFiles(runner: Runner)(filenames: Array[String]): ResultCatcher = {
     val resultCatcher = getResultCatcher
     while (resultCatcher.canConsume && !resultCatcher.isFull) {
-      try {
-        val scores = new Array[Array[Double]](filenames.length)
-        for (index <- filenames.indices) {
-          scores(index) = runner.calculateMvIScores(FILENAME_PREFIX + filenames(index))
-        }
-        resultCatcher.consume(scores)
-      } catch {
-        case e: Throwable => println("Caught: " + e.getMessage) // Print message and retry
+      //      try {
+      val scores = new Array[Array[Double]](filenames.length)
+      for (index <- filenames.indices) {
+        scores(index) = runner.calculateMvIScores(FILENAME_PREFIX + filenames(index))
       }
+      resultCatcher.consume(scores)
+      //      } catch {
+      //        case e: Throwable => println("Caught: " + e.getMessage) // Print message and retry
+      //      }
     }
     resultCatcher
 

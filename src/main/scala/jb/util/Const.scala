@@ -2,6 +2,7 @@ package jb.util
 
 object Const {
 
+  val SPARSE_LABEL = "sparse_label"
   val LABEL = "label"
   val SPARSE_FEATURES = "sparse_features"
   val FEATURES = "features"

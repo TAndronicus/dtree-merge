@@ -10,9 +10,7 @@ class TreeParser(rowWithinStrategy: (Array[Double], Array[Double]) => (Array[Dou
   // TODO: optimize cpu
   def dt2rect(parent: Cube, node: Node): Array[Cube] = {
     node match {
-      case _: InternalNode =>
-        val interNode = node.asInstanceOf[InternalNode]
-
+      case interNode: InternalNode =>
         val newMax = parent.max.clone()
         newMax(interNode.split.featureIndex) = interNode.split.asInstanceOf[ContinuousSplit].threshold
         val newMin = parent.min.clone()

@@ -4,10 +4,24 @@ import jb.conf.Config
 import jb.util.Const._
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.feature.ChiSqSelectorModel
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
 object Util {
+
+  def densifyLabel(input: DataFrame): DataFrame = {
+    val columnMapping = input.select(Const.SPARSE_LABEL)
+      .orderBy(Const.SPARSE_LABEL)
+      .dropDuplicates()
+      .collect()
+      .map(_.get(0).toString)
+      .zipWithIndex
+      .toMap
+    val mapper = columnMapping(_)
+    input.withColumn(Const.LABEL, udf(mapper)
+      .apply(col(SPARSE_LABEL)))
+      .drop(Const.SPARSE_LABEL)
+  }
 
   // TODO: optimize cpu
   def getExtrema(input: DataFrame, selectedFeatures: Array[Int]): (Array[Double], Array[Double]) = {

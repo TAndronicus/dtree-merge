@@ -26,6 +26,7 @@ class Runner(val nClassif: Int, var nFeatures: Int, val divisions: Array[Int]) {
     println(filename)
 
     var input = getRawInput(filename, "csv")
+    input = densifyLabel(input)
     if (nFeatures > input.columns.length - 1) {
       this.nFeatures = input.columns.length - 1
       println(s"Setting nFeatures to $nFeatures")
